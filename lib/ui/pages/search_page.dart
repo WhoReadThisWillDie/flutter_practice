@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -19,6 +21,8 @@ class SearchPageState extends State<SearchPage> {
   int _currentPage = 1;
   String _currentSearchQuery = '';
   bool _isPaginationEnabled = false;
+
+  Timer? searchDebounce;
 
   final refreshController = RefreshController();
 
@@ -62,9 +66,14 @@ class SearchPageState extends State<SearchPage> {
               _currentResults = [];
               _currentSearchQuery = value;
 
-              context
-                  .read<CharacterBloc>()
-                  .add(CharacterFetchEvent(page: _currentPage, name: value));
+              searchDebounce?.cancel();
+              searchDebounce = Timer(const Duration(seconds: 1), () {
+                context
+                    .read<CharacterBloc>()
+                    .add(CharacterFetchEvent(page: _currentPage, name: value));
+              });
+
+
             },
           ),
         ),
